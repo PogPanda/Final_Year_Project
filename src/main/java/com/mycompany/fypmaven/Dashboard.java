@@ -1,0 +1,628 @@
+package com.mycompany.fypmaven;
+
+import static com.mycompany.fypmaven.DB_Connection.getConnection;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+public class Dashboard extends javax.swing.JFrame {
+
+    private DefaultListModel<String> descriptionsListModel = new DefaultListModel<>();
+    private String description;
+    private UserAccs user;
+    private static final Logger logger = LogManager.getLogger();
+
+    public Dashboard() {
+        initComponents();
+    }
+
+//  Overload of the constructor
+    public Dashboard(UserAccs user) {
+
+//      Initial setup of the frame
+        initComponents();
+        this.user = user;
+        LblUser.setText(user.getUsername());
+
+        /*      Listeners    */
+//      Search Box Document Listener
+/*      Refreshes the list based on the text in the search box*/
+        TxtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                refreshList();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                refreshList();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                // Plain text components don't fire these events
+            }
+
+        });
+
+//      Description List Selection Listener
+/*      Sets the description value based on what is clicked in the list box*/
+        LstDescription.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    description = LstDescription.getSelectedValue();
+
+                }
+            }
+        });
+
+        PopulateList();
+
+    }
+
+    private void PopulateList() {
+
+//      Sets the model
+        LstDescription.setModel(descriptionsListModel);
+
+//      Declaration of variables
+        String query = "SELECT description FROM accounts WHERE user_id = ?";
+        Object[] param = {user.getUserID()};
+        List<String> descriptionList = new ArrayList<String>();
+
+//      Gets all the descriptions from the accounts related to the user and inserts it into the list
+        try (Connection connection = getConnection()) {
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                for (int i = 0; i < param.length; i++) {
+                    statement.setObject(i + 1, param[i]);
+                }
+                ResultSet resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    String description = resultSet.getString("Description");
+                    descriptionList.add(description);
+                }
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage());
+        }
+
+//      Adds all the descriptions into the list model
+        if (TxtSearch.getText().equals("")) {
+            for (String item : descriptionList) {
+                descriptionsListModel.addElement(item);
+            }
+        } else {
+
+            String Search = TxtSearch.getText();
+
+//      Adds the descriptions that matches the text found in the search text box
+            for (String item : descriptionList) {
+                if (item.contains(Search)) {
+                    List<String> searchDescriptionList = new ArrayList<>();
+                    searchDescriptionList.add(item);
+                    if (searchDescriptionList == null) {
+
+                    } else {
+                        for (String items : searchDescriptionList) {
+                            descriptionsListModel.addElement(items);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+//    Function to clear the existing data from the list model and repopulated
+    private void refreshList() {
+        descriptionsListModel.clear();
+        PopulateList();
+    }
+
+//    Function to copy the text parameter provided
+    public void CopySelected(String text) {
+
+        StringSelection selection = new StringSelection(text);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(selection, selection);
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        Background = new javax.swing.JPanel();
+        Sidebar = new javax.swing.JPanel();
+        AddAccountButton = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        LblAddAcc = new javax.swing.JLabel();
+        Logo = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        BtnDltAcc = new javax.swing.JPanel();
+        LblDeleteAcc = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        BtnEditAcc = new javax.swing.JPanel();
+        LblEditAcc = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        LblLogOut = new javax.swing.JLabel();
+        LblSearch = new javax.swing.JLabel();
+        TxtSearch = new javax.swing.JTextField();
+        LblUser = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        ScrollPaneDescription = new javax.swing.JScrollPane();
+        LstDescription = new javax.swing.JList<>();
+        BtnCpURL = new javax.swing.JButton();
+        BtnCPUsername = new javax.swing.JButton();
+        BtnCPPass = new javax.swing.JButton();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setResizable(false);
+
+        Background.setBackground(new java.awt.Color(255, 255, 255));
+
+        Sidebar.setBackground(new java.awt.Color(0, 0, 0));
+        Sidebar.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        AddAccountButton.setBackground(new java.awt.Color(0, 0, 0));
+        AddAccountButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                AddAccountButtonMouseClicked(evt);
+            }
+        });
+
+        jLabel4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Plus_Icon(20px).png"))); // NOI18N
+        jLabel4.setDisabledIcon(null);
+
+        LblAddAcc.setBackground(new java.awt.Color(255, 255, 255));
+        LblAddAcc.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        LblAddAcc.setForeground(new java.awt.Color(204, 204, 204));
+        LblAddAcc.setText("Add Account");
+
+        javax.swing.GroupLayout AddAccountButtonLayout = new javax.swing.GroupLayout(AddAccountButton);
+        AddAccountButton.setLayout(AddAccountButtonLayout);
+        AddAccountButtonLayout.setHorizontalGroup(
+            AddAccountButtonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AddAccountButtonLayout.createSequentialGroup()
+                .addGap(0, 31, Short.MAX_VALUE)
+                .addComponent(jLabel4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(LblAddAcc)
+                .addGap(0, 75, Short.MAX_VALUE))
+        );
+        AddAccountButtonLayout.setVerticalGroup(
+            AddAccountButtonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(AddAccountButtonLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(AddAccountButtonLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(LblAddAcc)
+                    .addComponent(jLabel4))
+                .addGap(0, 16, Short.MAX_VALUE))
+        );
+
+        Sidebar.add(AddAccountButton, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 110, 220, 50));
+
+        Logo.setBackground(new java.awt.Color(0, 0, 0));
+
+        jLabel7.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel7.setFont(new java.awt.Font("Arial Black", 1, 14)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(204, 204, 204));
+        jLabel7.setText("Password Manager");
+
+        jLabel8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Lock_Icon(40px).png"))); // NOI18N
+
+        javax.swing.GroupLayout LogoLayout = new javax.swing.GroupLayout(Logo);
+        Logo.setLayout(LogoLayout);
+        LogoLayout.setHorizontalGroup(
+            LogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(LogoLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel8)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel7)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        LogoLayout.setVerticalGroup(
+            LogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, LogoLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(LogoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel8)
+                    .addGroup(LogoLayout.createSequentialGroup()
+                        .addGap(11, 11, 11)
+                        .addComponent(jLabel7)))
+                .addGap(80, 80, 80))
+        );
+
+        Sidebar.add(Logo, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 20, 220, 60));
+
+        BtnDltAcc.setBackground(new java.awt.Color(0, 0, 0));
+        BtnDltAcc.setForeground(new java.awt.Color(0, 0, 0));
+        BtnDltAcc.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                BtnDltAccMouseClicked(evt);
+            }
+        });
+
+        LblDeleteAcc.setBackground(new java.awt.Color(255, 255, 255));
+        LblDeleteAcc.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        LblDeleteAcc.setForeground(new java.awt.Color(204, 204, 204));
+        LblDeleteAcc.setText("Delete Account");
+
+        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Delete_Icon(20px).png"))); // NOI18N
+
+        javax.swing.GroupLayout BtnDltAccLayout = new javax.swing.GroupLayout(BtnDltAcc);
+        BtnDltAcc.setLayout(BtnDltAccLayout);
+        BtnDltAccLayout.setHorizontalGroup(
+            BtnDltAccLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(BtnDltAccLayout.createSequentialGroup()
+                .addGap(34, 34, 34)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(LblDeleteAcc)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        BtnDltAccLayout.setVerticalGroup(
+            BtnDltAccLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, BtnDltAccLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(BtnDltAccLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(LblDeleteAcc)
+                    .addComponent(jLabel2))
+                .addContainerGap())
+        );
+
+        Sidebar.add(BtnDltAcc, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 210, 220, -1));
+
+        BtnEditAcc.setBackground(new java.awt.Color(0, 0, 0));
+        BtnEditAcc.setForeground(new java.awt.Color(0, 0, 0));
+        BtnEditAcc.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                BtnEditAccMouseClicked(evt);
+            }
+        });
+
+        LblEditAcc.setBackground(new java.awt.Color(255, 255, 255));
+        LblEditAcc.setFont(new java.awt.Font("Segoe UI", 0, 16)); // NOI18N
+        LblEditAcc.setForeground(new java.awt.Color(204, 204, 204));
+        LblEditAcc.setText("Edit Account");
+
+        jLabel6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Edit_Icon(20px).png"))); // NOI18N
+
+        javax.swing.GroupLayout BtnEditAccLayout = new javax.swing.GroupLayout(BtnEditAcc);
+        BtnEditAcc.setLayout(BtnEditAccLayout);
+        BtnEditAccLayout.setHorizontalGroup(
+            BtnEditAccLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(BtnEditAccLayout.createSequentialGroup()
+                .addGap(34, 34, 34)
+                .addComponent(jLabel6)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(LblEditAcc)
+                .addContainerGap(74, Short.MAX_VALUE))
+        );
+        BtnEditAccLayout.setVerticalGroup(
+            BtnEditAccLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, BtnEditAccLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(BtnEditAccLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(LblEditAcc)
+                    .addComponent(jLabel6))
+                .addContainerGap())
+        );
+
+        Sidebar.add(BtnEditAcc, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 160, 220, 50));
+
+        LblLogOut.setFont(new java.awt.Font("Arial Rounded MT Bold", 1, 24)); // NOI18N
+        LblLogOut.setForeground(new java.awt.Color(0, 0, 0));
+        LblLogOut.setText("Log Out");
+        LblLogOut.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                LblLogOutMouseClicked(evt);
+            }
+        });
+
+        LblSearch.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+        LblSearch.setForeground(new java.awt.Color(0, 0, 0));
+        LblSearch.setText("Search :");
+
+        TxtSearch.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+
+        LblUser.setFont(new java.awt.Font("Arial Black", 1, 21)); // NOI18N
+        LblUser.setForeground(new java.awt.Color(0, 0, 0));
+        LblUser.setText("Ng Zheng Yao");
+
+        jLabel9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/user (1).png"))); // NOI18N
+
+        ScrollPaneDescription.setViewportView(LstDescription);
+
+        BtnCpURL.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+        BtnCpURL.setText("Copy URL");
+        BtnCpURL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnCpURLActionPerformed(evt);
+            }
+        });
+
+        BtnCPUsername.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+        BtnCPUsername.setText("Copy Username");
+        BtnCPUsername.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnCPUsernameActionPerformed(evt);
+            }
+        });
+
+        BtnCPPass.setFont(new java.awt.Font("Dialog", 0, 14)); // NOI18N
+        BtnCPPass.setText("Copy Password");
+        BtnCPPass.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnCPPassActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout BackgroundLayout = new javax.swing.GroupLayout(Background);
+        Background.setLayout(BackgroundLayout);
+        BackgroundLayout.setHorizontalGroup(
+            BackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(BackgroundLayout.createSequentialGroup()
+                .addComponent(Sidebar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(BackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(BackgroundLayout.createSequentialGroup()
+                        .addGap(25, 25, 25)
+                        .addComponent(jLabel9)
+                        .addGap(12, 12, 12)
+                        .addComponent(LblUser)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(LblLogOut))
+                    .addGroup(BackgroundLayout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(LblSearch)
+                        .addGap(6, 6, 6)
+                        .addComponent(TxtSearch))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, BackgroundLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(ScrollPaneDescription))
+                    .addGroup(BackgroundLayout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 257, Short.MAX_VALUE)
+                        .addComponent(BtnCpURL, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(BtnCPUsername)
+                        .addGap(18, 18, 18)
+                        .addComponent(BtnCPPass)))
+                .addContainerGap())
+        );
+        BackgroundLayout.setVerticalGroup(
+            BackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(BackgroundLayout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addGroup(BackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel9)
+                    .addGroup(BackgroundLayout.createSequentialGroup()
+                        .addGap(1, 1, 1)
+                        .addGroup(BackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(LblUser)
+                            .addComponent(LblLogOut, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(18, 18, 18)
+                .addGroup(BackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(TxtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(LblSearch))
+                .addGap(12, 12, 12)
+                .addComponent(ScrollPaneDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(BackgroundLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(BtnCPPass, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(BtnCPUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(BtnCpURL, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+            .addComponent(Sidebar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(Background, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(Background, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+//  This is the logout button code block. 
+    private void LblLogOutMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_LblLogOutMouseClicked
+
+        LoginPanel login = new LoginPanel();
+        login.setVisible(true);
+        this.dispose();
+
+    }//GEN-LAST:event_LblLogOutMouseClicked
+
+// This is the button to redirect users to the add account page code block
+    private void AddAccountButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_AddAccountButtonMouseClicked
+
+        CreateAccountPanel accountcreate = new CreateAccountPanel(user);
+        accountcreate.setVisible(true);
+        this.dispose();
+
+    }//GEN-LAST:event_AddAccountButtonMouseClicked
+
+//  This is the copy password code block
+    private void BtnCPPassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCPPassActionPerformed
+
+        if (description != null) {
+
+//          Declaration of variables
+            String query = "SELECT Password FROM accounts WHERE Description = ? AND user_id = ?";
+            Object[] param = {description, user.getUserID()};
+
+//          Gets the decrypted value of the password variable of the selected account
+            DB_Connection connection = new DB_Connection();
+            String password = connection.executeReadQuery(query, param, "Password");
+            String decryptedpassword = GeneralFunctions.decrypt(password, user.getEncryptKey());
+
+//          Copies the decrypted value to the users clipboard and displays the notification 
+            CopySelected(decryptedpassword);
+            GeneralFunctions.showNotification("The Password has been copied", "Success");
+        }
+    }//GEN-LAST:event_BtnCPPassActionPerformed
+
+//  This is the username password code block
+    private void BtnCPUsernameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCPUsernameActionPerformed
+
+        if (description != null) {
+
+//          Declaration of variables
+            String query = "SELECT Username FROM accounts WHERE Description = ? AND user_ID = ?";
+            Object[] param = {description, user.getUserID()};
+
+//          Gets the value of the username variable of the selected account
+            DB_Connection connection = new DB_Connection();
+            String username = connection.executeReadQuery(query, param, "Username");
+
+//          Copies the Username to the users clipboard and displays the notification 
+            CopySelected(username);
+            GeneralFunctions.showNotification("The Username has been copied", "Success");
+        }
+    }//GEN-LAST:event_BtnCPUsernameActionPerformed
+
+//  This is the url password code block
+    private void BtnCpURLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCpURLActionPerformed
+
+        if (description != null) {
+
+//          Declaration of variables
+            String query = "SELECT URL FROM accounts WHERE Description = ? AND user_ID = ?";
+            Object[] param = {description, user.getUserID()};
+
+//          Gets the value of the URL variable of the selected account
+            DB_Connection connection = new DB_Connection();
+            String url = connection.executeReadQuery(query, param, "URL");
+
+//          Copies the URL to the users clipboard and displays the notification 
+            CopySelected(url);
+            GeneralFunctions.showNotification("The URL has been copied", "Success");
+        }
+    }//GEN-LAST:event_BtnCpURLActionPerformed
+
+// This is the button to redirect users to the edit account page code block  
+    private void BtnEditAccMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_BtnEditAccMouseClicked
+
+        if (description != null) {
+
+            EditAccountPanel accountedit = new EditAccountPanel(user, description);
+            accountedit.setVisible(true);
+            this.dispose();
+        }
+
+    }//GEN-LAST:event_BtnEditAccMouseClicked
+
+// This is the delete account code block 
+    private void BtnDltAccMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_BtnDltAccMouseClicked
+
+        if (description != null) {
+
+            // Display a confirmation dialog
+            int choice = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this item?", "Delete Confirmation", JOptionPane.YES_NO_OPTION);
+
+            // Check the user's choice
+            if (choice == JOptionPane.YES_OPTION) {
+
+                String account = description;
+                logger.info("Deleting the " + account + " account");
+//              Declaration of variables
+                String query = "DELETE FROM accounts WHERE Description = ? AND user_ID = ?";
+                Object[] param = {description, user.getUserID()};
+
+//              Executes the deletion query 
+                DB_Connection connection = new DB_Connection();
+                connection.executeQuery(query, param);
+
+//              Gives a notification to the user that the record has been deleted
+                GeneralFunctions.showNotification("The record has been deleted", "Success");
+                refreshList();
+                logger.info("Successfully deleted the " + account + " account");
+            }
+        }
+
+    }//GEN-LAST:event_BtnDltAccMouseClicked
+
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Dashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Dashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Dashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Dashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new Dashboard().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel AddAccountButton;
+    private javax.swing.JPanel Background;
+    private javax.swing.JButton BtnCPPass;
+    private javax.swing.JButton BtnCPUsername;
+    private javax.swing.JButton BtnCpURL;
+    private javax.swing.JPanel BtnDltAcc;
+    private javax.swing.JPanel BtnEditAcc;
+    private javax.swing.JLabel LblAddAcc;
+    private javax.swing.JLabel LblDeleteAcc;
+    private javax.swing.JLabel LblEditAcc;
+    private javax.swing.JLabel LblLogOut;
+    private javax.swing.JLabel LblSearch;
+    private javax.swing.JLabel LblUser;
+    private javax.swing.JPanel Logo;
+    private javax.swing.JList<String> LstDescription;
+    private javax.swing.JScrollPane ScrollPaneDescription;
+    private javax.swing.JPanel Sidebar;
+    private javax.swing.JTextField TxtSearch;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    // End of variables declaration//GEN-END:variables
+}
